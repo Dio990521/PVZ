@@ -22,6 +22,13 @@ IMAGE* plantSprites[PLANT_COUNT][20];
 int curX, curY; // cursor pos after clicking the plant card
 int selectedPlant; // 0: no selection
 
+struct Plant {
+	int type = 0; // 0: no plant
+	int frameIndex = 0;
+};
+
+struct Plant map[3][9];
+
 bool fileExist(const char* name)
 {
 	FILE* fp = fopen(name, "r");
@@ -39,6 +46,7 @@ void gameInit()
 	loadimage(&plantBar, "res/bar.png");
 
 	memset(plantSprites, 0, sizeof(plantSprites));
+	memset(map, 0, sizeof(map));
 
 	// load plant cards ui
 	char cardsDir[64];
@@ -80,6 +88,21 @@ void updateWindow()
 		putimage(x, y, &plantCards[i]);
 	}
 
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < 9; ++j)
+		{
+			if (map[i][j].type > 0)
+			{
+				int x = 256 + j * 81;
+				int y = 179 + i * 102;
+				int plantType = map[i][j].type - 1;
+				int curFrame = map[i][j].frameIndex;
+				putimagePNG(x, y, plantSprites[plantType][curFrame]);
+			}
+		}
+	}
+
 	// render the plant
 	if (selectedPlant > 0)
 	{
@@ -114,7 +137,42 @@ void userClick()
 		}
 		else if (msg.message == WM_LBUTTONUP)
 		{
+			if (msg.x > 256 && msg.y > 179 && msg.y < 489)
+			{
+				int row = (msg.y - 179) / 102;
+				int col = (msg.x - 256) / 81;
+				std::cout << row << col << std::endl;
 
+				if (map[row][col].type == 0)
+				{
+					map[row][col].type = selectedPlant;
+					map[row][col].frameIndex = 0;
+				}
+					
+			}
+
+			selectedPlant = 0;
+			state = 0;
+		}
+	}
+}
+
+void renderAll()
+{
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < 9; ++j)
+		{
+			if (map[i][j].type > 0)
+			{
+				map[i][j].frameIndex++;
+				int plantType = map[i][j].type - 1;
+				int index = map[i][j].frameIndex;
+				if (plantSprites[plantType][index] == NULL)
+				{
+					map[i][j].frameIndex = 0;
+				}
+			}
 		}
 	}
 }
@@ -123,11 +181,25 @@ int main()
 {
 	gameInit();
 
+	int timer = 0;
+	bool flag = true;
 	while (true)
 	{
 		userClick();
+		timer += getDelay();
+		if (timer > 50)
+		{
+			flag = true;
+			timer = 0;
+		}
 
-		updateWindow();
+		if (flag)
+		{
+			flag = false;
+			updateWindow();
+			renderAll();
+		}
+
 	}
 
 	system("pause");
