@@ -175,11 +175,46 @@ void renderAll()
 			}
 		}
 	}
+} 
+
+void startMenu()
+{
+	IMAGE startBG, startGame1, startGame2;
+	loadimage(&startBG, "res/menu.png");
+	loadimage(&startGame1, "res/menu1.png");
+	loadimage(&startGame2, "res/menu2.png");
+
+	int flag = 0;
+
+	while (true)
+	{
+		BeginBatchDraw();
+		putimage(0, 0, &startBG);
+		putimagePNG(474, 75, flag ? &startGame2 : &startGame1);
+
+		ExMessage msg;
+		if (peekmessage(&msg))
+		{
+			if (msg.message == WM_LBUTTONDOWN && msg.x > 474 && msg.x < 474 + 300 && msg.y > 75 && msg.y < 75 + 140)
+			{
+				flag = 1;
+			}
+			else if (msg.message == WM_LBUTTONUP && flag)
+			{
+				return;
+			}
+		}
+
+		EndBatchDraw();
+	}
+	
 }
 
 int main()
 {
 	gameInit();
+
+	startMenu();
 
 	int timer = 0;
 	bool flag = true;
