@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <time.h>
 #include <graphics.h> // easyx graphics library
 #include "tools.h"
 
@@ -29,6 +30,17 @@ struct Plant {
 
 struct Plant map[3][9];
 
+struct Sunshine
+{
+	int x, y;
+	int frameIndex;
+	int destY;
+	int used;
+};
+
+struct Sunshine sunshinePool[10];
+IMAGE sunshineSprites[29];
+
 bool fileExist(const char* name)
 {
 	FILE* fp = fopen(name, "r");
@@ -46,6 +58,7 @@ void gameInit()
 	loadimage(&plantBar, "res/bar.png");
 
 	memset(plantSprites, 0, sizeof(plantSprites));
+	//memset(sunshineSprites, 0, sizeof(sunshineSprites));
 	memset(map, 0, sizeof(map));
 
 	// load plant cards ui
@@ -69,6 +82,17 @@ void gameInit()
 			}
 		}
 	}
+
+	selectedPlant = 0;
+	memset(sunshinePool, 0, sizeof(sunshinePool));
+	for (int i = 0; i < 29; ++i)
+	{
+		sprintf_s(cardsDir, sizeof(cardsDir), "res/sunshine/%d.png", i + 1);
+		loadimage(&sunshineSprites[i], cardsDir);
+	}
+
+	// set a random seed
+	srand(time(NULL));
 
 	// create a game window
 	initgraph(WINDOW_WIDTH, WINDOW_HEIGHT, 1);
@@ -157,6 +181,33 @@ void userClick()
 	}
 }
 
+void createSunshine()
+{
+	static int count = 0;
+	static int freq = 400;
+	++count;
+	if (count >= freq)
+	{
+		freq = 200 + rand() % 200;
+		count = 0;
+		int sunshineCount = sizeof(sunshinePool) / sizeof(sunshinePool[0]);
+
+		for (int i = 0; i < sunshineCount; ++i)
+		{
+			if (!sunshinePool[i].used)
+			{
+				sunshinePool[i].used = true;
+				sunshinePool[i].frameIndex = 0;
+				sunshinePool[i].x = 260 + rand() % (900 - 260); // 260 ~ 900
+				sunshinePool[i].y = 60;
+				sunshinePool[i].destY = 200 + (rand() % 4) * 90;
+				break;
+			}
+		}
+	}
+
+}
+
 void renderAll()
 {
 	for (int i = 0; i < 3; ++i)
@@ -175,7 +226,11 @@ void renderAll()
 			}
 		}
 	}
+
+	createSunshine();
 } 
+
+
 
 void startMenu()
 {
