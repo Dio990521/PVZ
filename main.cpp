@@ -5,6 +5,8 @@
 #include <time.h>
 #include <graphics.h> // easyx graphics library
 #include "tools.h"
+#include <mmsystem.h>
+#pragma comment(lib, "winmm.lib")
 
 #define WINDOW_WIDTH 900
 #define WINDOW_HEIGHT 600
@@ -22,6 +24,7 @@ IMAGE* plantSprites[PLANT_COUNT][20];
 
 int curX, curY; // cursor pos after clicking the plant card
 int selectedPlant; // 0: no selection
+int sunshine;
 
 struct Plant {
 	int type = 0; // 0: no plant
@@ -35,7 +38,8 @@ struct Sunshine
 	int x, y;
 	int frameIndex;
 	int destY;
-	int used;
+	bool used;
+	int timer;
 };
 
 struct Sunshine sunshinePool[10];
@@ -84,6 +88,8 @@ void gameInit()
 	}
 
 	selectedPlant = 0;
+	sunshine = 50;
+
 	memset(sunshinePool, 0, sizeof(sunshinePool));
 	for (int i = 0; i < 29; ++i)
 	{
@@ -96,6 +102,17 @@ void gameInit()
 
 	// create a game window
 	initgraph(WINDOW_WIDTH, WINDOW_HEIGHT, 1);
+
+	// set font
+	LOGFONT font;
+	gettextstyle(&font);
+	font.lfHeight = 30;
+	font.lfWeight = 15;
+	strcpy(font.lfFaceName, "Segoe UI Black");
+	font.lfQuality = ANTIALIASED_QUALITY;
+	settextstyle(&font);
+	setbkmode(TRANSPARENT);
+	setcolor(BLACK);
 }
 
 void updateWindow()
@@ -134,7 +151,44 @@ void updateWindow()
 		putimagePNG(curX - img->getwidth() / 2, curY - img->getheight() / 2, img);
 	}
 
+	int sunshineCount = sizeof(sunshinePool) / sizeof(sunshinePool[0]);
+	for (int i = 0; i < sunshineCount; ++i)
+	{
+		if (sunshinePool[i].used)
+		{
+			IMAGE* sunshineImg = &sunshineSprites[sunshinePool[i].frameIndex];
+			putimagePNG(sunshinePool[i].x, sunshinePool[i].y, sunshineImg);
+		}
+	}
+
+	char scoreText[8];
+	sprintf_s(scoreText, sizeof(scoreText), "%d", sunshine);
+	outtextxy(276, 67, scoreText);
+
 	EndBatchDraw(); // end buffer
+
+}
+
+void collectSunshine(ExMessage* msg)
+{
+	int sunshineCount = sizeof(sunshinePool) / sizeof(sunshinePool[0]);
+	int w = sunshineSprites[0].getwidth();
+	int h = sunshineSprites[0].getheight();
+	for (int i = 0; i < sunshineCount; ++i)
+	{
+		if (sunshinePool[i].used)
+		{
+			int x = sunshinePool[i].x;
+			int y = sunshinePool[i].y;
+			if (msg->x > x && msg->x < x + w &&
+				msg->y > y && msg->y < y + h)
+			{
+				sunshinePool[i].used = false;
+				sunshine += 25;
+				mciSendString("play res/audio/sunshine.mp3", 0, 0, 0);
+			}
+		}
+	}
 
 }
 
@@ -152,6 +206,10 @@ void userClick()
 				state = 1;
 				selectedPlant = index + 1;
 				std::cout << index << std::endl;
+			}
+			else
+			{
+				collectSunshine(&msg);
 			}
 		}
 		else if (msg.message == WM_MOUSEMOVE && state == 1)
@@ -201,11 +259,36 @@ void createSunshine()
 				sunshinePool[i].x = 260 + rand() % (900 - 260); // 260 ~ 900
 				sunshinePool[i].y = 60;
 				sunshinePool[i].destY = 200 + (rand() % 4) * 90;
+				sunshinePool[i].timer = 0;
 				break;
 			}
 		}
 	}
 
+}
+
+void updateSunshine()
+{
+	int sunshineCount = sizeof(sunshinePool) / sizeof(sunshinePool[0]);
+	for (int i = 0; i < sunshineCount; ++i)
+	{
+		if (sunshinePool[i].used)
+		{
+			sunshinePool[i].frameIndex = (sunshinePool[i].frameIndex + 1) % 29;
+			if (sunshinePool[i].timer == 0)
+			{
+				sunshinePool[i].y += 4;
+			}
+			if (sunshinePool[i].y >= sunshinePool[i].destY)
+			{
+				sunshinePool[i].timer++;
+				if (sunshinePool[i].timer > 100)
+				{
+					sunshinePool[i].used = false;
+				}
+			}
+		}
+	}
 }
 
 void renderAll()
@@ -228,6 +311,7 @@ void renderAll()
 	}
 
 	createSunshine();
+	updateSunshine();
 } 
 
 
