@@ -45,6 +45,16 @@ struct Sunshine
 struct Sunshine sunshinePool[10];
 IMAGE sunshineSprites[29];
 
+struct Zombie
+{
+	int x, y;
+	int frameIndex;
+	bool used;
+	int speed;
+};
+struct Zombie zombiePool[10];
+IMAGE zombieSprites[22];
+
 bool fileExist(const char* name)
 {
 	FILE* fp = fopen(name, "r");
@@ -113,6 +123,14 @@ void gameInit()
 	settextstyle(&font);
 	setbkmode(TRANSPARENT);
 	setcolor(BLACK);
+
+	// init zombies
+	memset(zombiePool, 0, sizeof(zombiePool));
+	for (int i = 0; i < 22; ++i)
+	{
+		sprintf_s(cardsDir, sizeof(cardsDir), "res/zm/0/%d.png", i + 1);
+		loadimage(&zombieSprites[i], cardsDir);
+	}
 }
 
 void updateWindow()
@@ -164,6 +182,17 @@ void updateWindow()
 	char scoreText[8];
 	sprintf_s(scoreText, sizeof(scoreText), "%d", sunshine);
 	outtextxy(276, 67, scoreText);
+
+	// render zombies
+	int zombieCount = sizeof(zombiePool) / sizeof(zombiePool[0]);
+	for (int i = 0; i < zombieCount; ++i)
+	{
+		if (zombiePool[i].used)
+		{
+			IMAGE* zombieImg = &zombieSprites[zombiePool[i].frameIndex];
+			putimagePNG(zombiePool[i].x, zombiePool[i].y - zombieImg->getheight(), zombieImg);
+		}
+	}
 
 	EndBatchDraw(); // end buffer
 
@@ -291,6 +320,52 @@ void updateSunshine()
 	}
 }
 
+void createZombie()
+{
+	static int zombieFreq = 200;
+	static int count = 0;
+	++count;
+	int zombieCount = sizeof(zombiePool) / sizeof(zombiePool[0]);
+
+	if (count > zombieFreq)
+	{
+		count = 0;
+		zombieFreq = rand() % 200 + 300;
+		for (int i = 0; i < zombieCount; ++i)
+		{
+			if (!zombiePool[i].used)
+			{
+				zombiePool[i].used = true;
+				zombiePool[i].speed = 1;
+				zombiePool[i].x = WINDOW_WIDTH;
+				zombiePool[i].y = 172 + (1 + rand() % 3) * 100;
+				break;
+			}
+		}
+	}
+
+}
+
+void updateZombie()
+{
+	int zombieCount = sizeof(zombiePool) / sizeof(zombiePool[0]);
+	for (int i = 0; i < zombieCount; ++i)
+	{
+		if (zombiePool[i].used)
+		{
+			zombiePool[i].x -= zombiePool[i].speed;
+			zombiePool[i].frameIndex = (zombiePool[i].frameIndex + 1) % 22;
+			if (zombiePool[i].x < 170)
+			{
+				std::cout << "Fuck you! Game Over!" << std::endl;
+				MessageBox(NULL, "over", "fuck you loser", 0);
+				exit(0);
+			}
+		}
+	}
+
+}
+
 void renderAll()
 {
 	for (int i = 0; i < 3; ++i)
@@ -312,6 +387,9 @@ void renderAll()
 
 	createSunshine();
 	updateSunshine();
+
+	createZombie();
+	updateZombie();
 } 
 
 
