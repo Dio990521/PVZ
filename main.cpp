@@ -5,6 +5,7 @@
 #include <time.h>
 #include <graphics.h> // easyx graphics library
 #include "tools.h"
+#include <math.h>
 #include <mmsystem.h>
 #pragma comment(lib, "winmm.lib")
 
@@ -40,6 +41,8 @@ struct Sunshine
 	int destY;
 	bool used;
 	int timer;
+	float xOffset;
+	float yOffset;
 };
 
 struct Sunshine sunshinePool[10];
@@ -169,10 +172,11 @@ void updateWindow()
 		putimagePNG(curX - img->getwidth() / 2, curY - img->getheight() / 2, img);
 	}
 
+	// render the sunshine
 	int sunshineCount = sizeof(sunshinePool) / sizeof(sunshinePool[0]);
 	for (int i = 0; i < sunshineCount; ++i)
 	{
-		if (sunshinePool[i].used)
+		if (sunshinePool[i].used || sunshinePool[i].xOffset)
 		{
 			IMAGE* sunshineImg = &sunshineSprites[sunshinePool[i].frameIndex];
 			putimagePNG(sunshinePool[i].x, sunshinePool[i].y, sunshineImg);
@@ -213,8 +217,14 @@ void collectSunshine(ExMessage* msg)
 				msg->y > y && msg->y < y + h)
 			{
 				sunshinePool[i].used = false;
-				sunshine += 25;
 				mciSendString("play res/audio/sunshine.mp3", 0, 0, 0);
+
+				// set the offset
+				float destY = 0;
+				float destX = 262;
+				float angle = atan((y - destY) / (x - destX));
+				sunshinePool[i].xOffset = 4 * cos(angle);
+				sunshinePool[i].yOffset = 4 * sin(angle);
 			}
 		}
 	}
@@ -289,6 +299,8 @@ void createSunshine()
 				sunshinePool[i].y = 60;
 				sunshinePool[i].destY = 200 + (rand() % 4) * 90;
 				sunshinePool[i].timer = 0;
+				sunshinePool[i].xOffset = 0;
+				sunshinePool[i].yOffset = 0;
 				break;
 			}
 		}
@@ -315,6 +327,23 @@ void updateSunshine()
 				{
 					sunshinePool[i].used = false;
 				}
+			}
+		}
+		else if (sunshinePool[i].xOffset)
+		{
+			float destY = 0;
+			float destX = 262;
+			float angle = atan((sunshinePool[i].y - destY) / (sunshinePool[i].x - destX));
+			sunshinePool[i].xOffset = 4 * cos(angle);
+			sunshinePool[i].yOffset = 4 * sin(angle);
+
+			sunshinePool[i].x -= sunshinePool[i].xOffset;
+			sunshinePool[i].y -= sunshinePool[i].yOffset;
+			if (sunshinePool[i].y < 0 || sunshinePool[i].x < 262)
+			{
+				sunshinePool[i].xOffset = 0;
+				sunshinePool[i].yOffset = 0;
+				sunshine += 25;
 			}
 		}
 	}
