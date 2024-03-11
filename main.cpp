@@ -54,9 +54,21 @@ struct Zombie
 	int frameIndex;
 	bool used;
 	int speed;
+	int row;
 };
 struct Zombie zombiePool[10];
 IMAGE zombieSprites[22];
+
+struct Bullet
+{
+	int x, y;
+	int row;
+	bool used;
+	int speed;
+};
+struct Bullet bulletsPool[30];
+IMAGE bulletNormalSprite;
+
 
 bool fileExist(const char* name)
 {
@@ -75,7 +87,6 @@ void gameInit()
 	loadimage(&plantBar, "res/bar.png");
 
 	memset(plantSprites, 0, sizeof(plantSprites));
-	//memset(sunshineSprites, 0, sizeof(sunshineSprites));
 	memset(map, 0, sizeof(map));
 
 	// load plant cards ui
@@ -134,6 +145,10 @@ void gameInit()
 		sprintf_s(cardsDir, sizeof(cardsDir), "res/zm/0/%d.png", i + 1);
 		loadimage(&zombieSprites[i], cardsDir);
 	}
+
+	//
+	loadimage(&bulletNormalSprite, "res/bullets/PeaNormal/PeaNormal_0.png");
+	memset(bulletsPool, 0, sizeof(bulletsPool));
 }
 
 void updateWindow()
@@ -195,6 +210,17 @@ void updateWindow()
 		{
 			IMAGE* zombieImg = &zombieSprites[zombiePool[i].frameIndex];
 			putimagePNG(zombiePool[i].x, zombiePool[i].y - zombieImg->getheight(), zombieImg);
+		}
+	}
+
+	// render bullets
+	int bulletCount = sizeof(bulletsPool) / sizeof(bulletsPool[0]);
+	for (int i = 0; i < bulletCount; ++i)
+	{
+		if (bulletsPool[i].used)
+		{
+			std::cout << "bullet render!" << std::endl;
+			putimagePNG(bulletsPool[i].x, bulletsPool[i].y, &bulletNormalSprite);
 		}
 	}
 
@@ -366,8 +392,9 @@ void createZombie()
 			{
 				zombiePool[i].used = true;
 				zombiePool[i].speed = 1;
+				zombiePool[i].row = rand() % 3;
 				zombiePool[i].x = WINDOW_WIDTH;
-				zombiePool[i].y = 172 + (1 + rand() % 3) * 100;
+				zombiePool[i].y = 172 + (1 + zombiePool[i].row) * 100;
 				break;
 			}
 		}
@@ -395,6 +422,72 @@ void updateZombie()
 
 }
 
+void shoot()
+{
+	int lines[3] = { 0 };
+	int zombieCount = sizeof(zombiePool) / sizeof(zombiePool[0]);
+	int bulletCount = sizeof(bulletsPool) / sizeof(bulletsPool[0]);
+	int dangerX = WINDOW_WIDTH - zombieSprites[0].getwidth();
+	for (int i = 0; i < zombieCount; ++i)
+	{
+		if (zombiePool[i].used && zombiePool[i].x < dangerX)
+		{
+			lines[zombiePool[i].row] = 1;
+		}
+	}
+
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < 9; ++j)
+		{
+			if (map[i][j].type == PEASHOOTER + 1 && lines[i])
+			{
+				static int count = 0;
+				++count;
+				if (count > 20)
+				{
+					count = 0;
+					int k = 0;
+					for (k = 0; k < bulletCount; ++k)
+					{
+						if (!bulletsPool[k].used)
+						{
+							std::cout << "bullet create!" << std::endl;
+							bulletsPool[k].used = true;
+							bulletsPool[k].row = i;
+							bulletsPool[k].speed = 5;
+
+							int plantX = 256 + j * 81;
+							int plantY = 179 + i * 102 + 14;
+							bulletsPool[k].x = plantX + plantSprites[map[i][j].type - 1][0]->getwidth() - 10;
+							bulletsPool[k].y = plantY + 5;
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void updateBullets()
+{
+	int bulletCount = sizeof(bulletsPool) / sizeof(bulletsPool[0]);
+
+	for (int i = 0; i < bulletCount; ++i)
+	{
+		if (bulletsPool[i].used)
+		{
+			std::cout << "bullet update!" << std::endl;
+			bulletsPool[i].x += bulletsPool[i].speed;
+			if (bulletsPool[i].x > WINDOW_WIDTH)
+			{
+				bulletsPool[i].used = false;
+			}
+		}
+	}
+}
+
 void renderAll()
 {
 	for (int i = 0; i < 3; ++i)
@@ -419,6 +512,9 @@ void renderAll()
 
 	createZombie();
 	updateZombie();
+
+	shoot();
+	updateBullets();
 } 
 
 
