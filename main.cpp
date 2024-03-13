@@ -56,9 +56,11 @@ struct Zombie
 	int speed;
 	int row;
 	int hp;
+	bool isDead;
 };
 struct Zombie zombiePool[10];
 IMAGE zombieSprites[22];
+IMAGE zombieDieSprites[10];
 
 struct Bullet
 {
@@ -161,6 +163,12 @@ void gameInit()
 			bulletBlast[3].getwidth() * k, bulletBlast[3].getheight() * k, true);
 	}
 
+	for (int i = 0; i < 10; ++i)
+	{
+		sprintf_s(cardsDir, sizeof(cardsDir), "res/zm_dead/%d.png", i + 1);
+		loadimage(&zombieDieSprites[i], cardsDir);
+	}
+
 }
 
 void updateWindow()
@@ -220,7 +228,9 @@ void updateWindow()
 	{
 		if (zombiePool[i].used)
 		{
-			IMAGE* zombieImg = &zombieSprites[zombiePool[i].frameIndex];
+			//IMAGE* zombieImg = &zombieSprites[zombiePool[i].frameIndex];
+			IMAGE* zombieImg = (zombiePool[i].isDead) ? zombieDieSprites : zombieSprites;
+			zombieImg += zombiePool[i].frameIndex;
 			putimagePNG(zombiePool[i].x, zombiePool[i].y - zombieImg->getheight(), zombieImg);
 		}
 	}
@@ -429,7 +439,19 @@ void updateZombie()
 		if (zombiePool[i].used)
 		{
 			zombiePool[i].x -= zombiePool[i].speed;
-			zombiePool[i].frameIndex = (zombiePool[i].frameIndex + 1) % 22;
+			if (zombiePool[i].isDead)
+			{
+				zombiePool[i].frameIndex++;
+				if (zombiePool[i].frameIndex >= 10)
+				{
+					zombiePool[i].used = false;
+				}
+			}
+			else
+			{
+				zombiePool[i].frameIndex = (zombiePool[i].frameIndex + 1) % 22;
+			}
+			
 			if (zombiePool[i].x < 170)
 			{
 				MessageBox(NULL, "over", "fuck you loser", 0);
@@ -527,11 +549,20 @@ void collisionCheck()
 			int x1 = zombiePool[k].x + 80;
 			int x2 = zombiePool[k].x + 110;
 			int x = bulletsPool[i].x;
-			if (bulletsPool[i].row == zombiePool[k].row && x > x1 && x < x2)
+			if (!zombiePool[k].isDead && bulletsPool[i].row == zombiePool[k].row && x > x1 && x < x2)
 			{
 				zombiePool[k].hp -= 20;
 				bulletsPool[i].blast = true;
 				bulletsPool[i].speed = 0;
+
+				if (zombiePool[k].hp <= 0)
+				{
+					zombiePool[k].isDead = true;
+					zombiePool[k].speed = 0;
+					zombiePool[k].frameIndex = 0;
+				}
+
+				break;
 			}
 		}
 	}
