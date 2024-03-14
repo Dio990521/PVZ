@@ -30,6 +30,8 @@ int sunshine;
 struct Plant {
 	int type = 0; // 0: no plant
 	int frameIndex = 0;
+	bool catched;
+	int hp;
 };
 
 struct Plant map[3][9];
@@ -57,10 +59,12 @@ struct Zombie
 	int row;
 	int hp;
 	bool isDead;
+	bool isEating;
 };
 struct Zombie zombiePool[10];
 IMAGE zombieSprites[22];
 IMAGE zombieDieSprites[10];
+IMAGE zombieEatSprites[21];
 
 struct Bullet
 {
@@ -169,6 +173,12 @@ void gameInit()
 		loadimage(&zombieDieSprites[i], cardsDir);
 	}
 
+	for (int i = 0; i < 21; ++i)
+	{
+		sprintf_s(cardsDir, sizeof(cardsDir), "res/zm_eat/0/%d.png", i + 1);
+		loadimage(&zombieEatSprites[i], cardsDir);
+	}
+
 }
 
 void updateWindow()
@@ -229,7 +239,11 @@ void updateWindow()
 		if (zombiePool[i].used)
 		{
 			//IMAGE* zombieImg = &zombieSprites[zombiePool[i].frameIndex];
-			IMAGE* zombieImg = (zombiePool[i].isDead) ? zombieDieSprites : zombieSprites;
+			IMAGE* zombieImg = NULL;
+			if (zombiePool[i].isDead) zombieImg = zombieDieSprites;
+			else if (zombiePool[i].isEating) zombieImg = zombieEatSprites;
+			else zombieImg = zombieSprites;
+			//IMAGE* zombieImg = (zombiePool[i].isDead) ? zombieDieSprites : zombieSprites;
 			zombieImg += zombiePool[i].frameIndex;
 			putimagePNG(zombiePool[i].x, zombiePool[i].y - zombieImg->getheight(), zombieImg);
 		}
@@ -418,9 +432,11 @@ void createZombie()
 		{
 			if (!zombiePool[i].used)
 			{
+				memset(&zombiePool[i], 0, sizeof(zombiePool[i]));
 				zombiePool[i].used = true;
 				zombiePool[i].speed = 1;
 				zombiePool[i].hp = 100;
+				zombiePool[i].isDead = false;
 				zombiePool[i].row = rand() % 3;
 				zombiePool[i].x = WINDOW_WIDTH;
 				zombiePool[i].y = 172 + (1 + zombiePool[i].row) * 100;
@@ -446,6 +462,10 @@ void updateZombie()
 				{
 					zombiePool[i].used = false;
 				}
+			}
+			else if (zombiePool[i].isEating)
+			{
+				zombiePool[i].frameIndex = (zombiePool[i].frameIndex + 1) % 21;
 			}
 			else
 			{
@@ -536,7 +556,49 @@ void updateBullets()
 	}
 }
 
-void collisionCheck()
+void checkZombieCollision()
+{
+	int zombieCount = sizeof(zombiePool) / sizeof(zombiePool[0]);
+	for (int i = 0; i < zombieCount; ++i)
+	{
+		if (zombiePool[i].isDead) continue;
+		int row = zombiePool[i].row;
+		for (int k = 0; k < 9; ++k)
+		{
+			if (map[row][k].type == 0) continue;
+
+			int plantX = 256 + k * 81;
+			int x1 = plantX + 10;
+			int x2 = plantX + 60;
+			int x3 = zombiePool[i].x + 80;
+			if (x3 > x1 && x3 < x2)
+			{
+				if (map[row][k].catched)
+				{
+					map[row][k].hp--;
+					if (map[row][k].hp <= 0)
+					{
+						map[row][k].hp = 0;
+						map[row][k].type = 0;
+						zombiePool[i].isEating = false;
+						zombiePool[i].frameIndex = 0;
+						zombiePool[i].speed = 1;
+					}
+				}
+				else
+				{
+					map[row][k].catched = true;
+					map[row][k].hp = 50;
+					zombiePool[i].isEating = true;
+					zombiePool[i].speed = 0;
+					zombiePool[i].frameIndex = 0;
+				}
+			}
+		}
+	}
+}
+
+void checkBulletCollision()
 {
 	int bulletCount = sizeof(bulletsPool) / sizeof(bulletsPool[0]);
 	int zombieCount = sizeof(zombiePool) / sizeof(zombiePool[0]);
@@ -551,7 +613,7 @@ void collisionCheck()
 			int x = bulletsPool[i].x;
 			if (!zombiePool[k].isDead && bulletsPool[i].row == zombiePool[k].row && x > x1 && x < x2)
 			{
-				zombiePool[k].hp -= 20;
+				zombiePool[k].hp -= 1;//10;
 				bulletsPool[i].blast = true;
 				bulletsPool[i].speed = 0;
 
@@ -566,6 +628,12 @@ void collisionCheck()
 			}
 		}
 	}
+}
+
+void collisionCheck()
+{
+	checkBulletCollision();
+	checkZombieCollision();
 }
 
 void renderAll()

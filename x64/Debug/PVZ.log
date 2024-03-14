@@ -1,10 +1,10 @@
 ﻿  main.cpp
-E:\CppProject\PVZ\main.cpp(81,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-E:\CppProject\PVZ\main.cpp(131,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-E:\CppProject\PVZ\main.cpp(161,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-E:\CppProject\PVZ\main.cpp(163,62): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-E:\CppProject\PVZ\main.cpp(163,30): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-E:\CppProject\PVZ\main.cpp(141,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-E:\CppProject\PVZ\main.cpp(394,40): warning C4244: '-=': conversion from 'float' to 'int', possible loss of data
-E:\CppProject\PVZ\main.cpp(395,40): warning C4244: '-=': conversion from 'float' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(85,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+E:\CppProject\PVZ\main.cpp(135,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+E:\CppProject\PVZ\main.cpp(165,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+E:\CppProject\PVZ\main.cpp(167,62): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(167,30): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(145,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+E:\CppProject\PVZ\main.cpp(408,40): warning C4244: '-=': conversion from 'float' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(409,40): warning C4244: '-=': conversion from 'float' to 'int', possible loss of data
   PVZ.vcxproj -> E:\CppProject\PVZ\x64\Debug\PVZ.exe
