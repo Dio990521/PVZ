@@ -5,6 +5,7 @@
 #include <time.h>
 #include <graphics.h> // easyx graphics library
 #include "tools.h"
+#include "vector2.h"
 #include <math.h>
 #include <mmsystem.h>
 #pragma comment(lib, "winmm.lib")
@@ -32,9 +33,13 @@ struct Plant {
 	int frameIndex = 0;
 	bool catched;
 	int hp;
+	int timer;
+	int x, y;
 };
 
 struct Plant map[3][9];
+
+enum {SUNSHINE_DOWN, SUNSHINE_GROUND, SUNSHINE_COLLECT, SUNSHINE_PRODUCT};
 
 struct Sunshine
 {
@@ -45,6 +50,12 @@ struct Sunshine
 	int timer;
 	float xOffset;
 	float yOffset;
+
+	float t; // ±´Èû¶ûÊ±¼äµã
+	vector2 p1, p2, p3, p4;
+	vector2 curPos;
+	float speed;
+	int status;
 };
 
 struct Sunshine sunshinePool[10];
@@ -181,6 +192,21 @@ void gameInit()
 
 }
 
+void drawSunshine()
+{
+	// render the sunshine
+	int sunshineCount = sizeof(sunshinePool) / sizeof(sunshinePool[0]);
+	for (int i = 0; i < sunshineCount; ++i)
+	{
+		if (sunshinePool[i].used)// || sunshinePool[i].xOffset)
+		{
+			IMAGE* sunshineImg = &sunshineSprites[sunshinePool[i].frameIndex];
+			//putimagePNG(sunshinePool[i].x, sunshinePool[i].y, sunshineImg);
+			putimagePNG(sunshinePool[i].curPos.x, sunshinePool[i].curPos.y, sunshineImg);
+		}
+	}
+}
+
 void updateWindow()
 {
 	BeginBatchDraw(); // buffer
@@ -201,11 +227,12 @@ void updateWindow()
 		{
 			if (map[i][j].type > 0)
 			{
-				int x = 256 + j * 81;
-				int y = 179 + i * 102;
+				//int x = 256 + j * 81;
+				//int y = 179 + i * 102;
 				int plantType = map[i][j].type - 1;
 				int curFrame = map[i][j].frameIndex;
-				putimagePNG(x, y, plantSprites[plantType][curFrame]);
+				//putimagePNG(x, y, plantSprites[plantType][curFrame]);
+				putimagePNG(map[i][j].x, map[i][j].y, plantSprites[plantType][curFrame]);
 			}
 		}
 	}
@@ -217,16 +244,7 @@ void updateWindow()
 		putimagePNG(curX - img->getwidth() / 2, curY - img->getheight() / 2, img);
 	}
 
-	// render the sunshine
-	int sunshineCount = sizeof(sunshinePool) / sizeof(sunshinePool[0]);
-	for (int i = 0; i < sunshineCount; ++i)
-	{
-		if (sunshinePool[i].used || sunshinePool[i].xOffset)
-		{
-			IMAGE* sunshineImg = &sunshineSprites[sunshinePool[i].frameIndex];
-			putimagePNG(sunshinePool[i].x, sunshinePool[i].y, sunshineImg);
-		}
-	}
+	drawSunshine();
 
 	char scoreText[8];
 	sprintf_s(scoreText, sizeof(scoreText), "%d", sunshine);
@@ -279,20 +297,30 @@ void collectSunshine(ExMessage* msg)
 	{
 		if (sunshinePool[i].used)
 		{
-			int x = sunshinePool[i].x;
-			int y = sunshinePool[i].y;
+			int x = sunshinePool[i].curPos.x;
+			int y = sunshinePool[i].curPos.y;
+
 			if (msg->x > x && msg->x < x + w &&
 				msg->y > y && msg->y < y + h)
 			{
-				sunshinePool[i].used = false;
-				mciSendString("play res/audio/sunshine.mp3", 0, 0, 0);
+				//sunshinePool[i].used = false;
+				sunshinePool[i].status = SUNSHINE_COLLECT;
 
-				// set the offset
-				float destY = 0;
-				float destX = 262;
-				float angle = atan((y - destY) / (x - destX));
-				sunshinePool[i].xOffset = 4 * cos(angle);
-				sunshinePool[i].yOffset = 4 * sin(angle);
+				//mciSendString("play res/audio/sunshine.mp3", 0, 0, 0);
+				PlaySound("res/audio/sunshine.wav", NULL, SND_FILENAME | SND_ASYNC);
+
+				//float destY = 0;
+				//float destX = 262;
+				//float angle = atan((y - destY) / (x - destX));
+				//sunshinePool[i].xOffset = 4 * cos(angle);
+				//sunshinePool[i].yOffset = 4 * sin(angle);
+				sunshinePool[i].p1 = sunshinePool[i].curPos;
+				sunshinePool[i].p4 = vector2(262, 0);
+				sunshinePool[i].t = 0;
+				float distance = dis(sunshinePool[i].p1 - sunshinePool[i].p4);
+				float offset = 8;
+				sunshinePool[i].speed = 1.0 / (distance / offset);
+				break;
 			}
 		}
 	}
@@ -336,6 +364,8 @@ void userClick()
 				{
 					map[row][col].type = selectedPlant;
 					map[row][col].frameIndex = 0;
+					map[row][col].x = 256 + col * 81;
+					map[row][col].y = 179 + row * 102 + 14;
 				}
 					
 			}
@@ -348,6 +378,7 @@ void userClick()
 
 void createSunshine()
 {
+	int sunshineCount = sizeof(sunshinePool) / sizeof(sunshinePool[0]);
 	static int count = 0;
 	static int freq = 400;
 	++count;
@@ -355,24 +386,65 @@ void createSunshine()
 	{
 		freq = 200 + rand() % 200;
 		count = 0;
-		int sunshineCount = sizeof(sunshinePool) / sizeof(sunshinePool[0]);
-
+		
 		for (int i = 0; i < sunshineCount; ++i)
 		{
 			if (!sunshinePool[i].used)
 			{
 				sunshinePool[i].used = true;
 				sunshinePool[i].frameIndex = 0;
-				sunshinePool[i].x = 260 + rand() % (900 - 260); // 260 ~ 900
-				sunshinePool[i].y = 60;
-				sunshinePool[i].destY = 200 + (rand() % 4) * 90;
+				//sunshinePool[i].x = 260 + rand() % (900 - 260); // 260 ~ 900
+				//sunshinePool[i].y = 60;
+				//sunshinePool[i].destY = 200 + (rand() % 4) * 90;
 				sunshinePool[i].timer = 0;
-				sunshinePool[i].xOffset = 0;
-				sunshinePool[i].yOffset = 0;
+				//sunshinePool[i].xOffset = 0;
+				//sunshinePool[i].yOffset = 0;
+
+				sunshinePool[i].status = SUNSHINE_DOWN;
+				sunshinePool[i].t = 0;
+				sunshinePool[i].p1 = vector2(260 + rand() % (900 - 260), 60);
+				sunshinePool[i].p4 = vector2(sunshinePool[i].p1.x, 200 + (rand() % 4) * 90);
+				int offset = 2;
+				float distance = sunshinePool[i].p4.y - sunshinePool[i].p1.y;
+				sunshinePool[i].speed = 1.0 / (distance / offset);
+
 				break;
 			}
 		}
 	}
+
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < 9; ++j)
+		{
+			if (map[i][j].type == SUNFLOWER + 1)
+			{
+				map[i][j].timer++;
+				if (map[i][j].timer > 200)
+				{
+					map[i][j].timer = 0;
+					for (int k = 0; k < sunshineCount; ++k)
+					{
+						if (!sunshinePool[k].used)
+						{
+							sunshinePool[k].used = true;
+							sunshinePool[k].p1 = vector2(map[i][j].x, map[i][j].y);
+							int w = 100 + rand() % 50 * (rand() % 2 ? 1 : -1);
+							sunshinePool[k].p4 = vector2(map[i][j].x + w, 
+								map[i][j].y + plantSprites[SUNFLOWER][0]->getheight() - sunshineSprites[0].getheight());
+							sunshinePool[k].p2 = vector2(sunshinePool[k].p1.x + w * 0.3, sunshinePool[k].p1.y - 100);
+							sunshinePool[k].p3 = vector2(sunshinePool[k].p1.x + w * 0.7, sunshinePool[k].p1.y - 100);
+							sunshinePool[k].status = SUNSHINE_PRODUCT;
+							sunshinePool[k].speed = 0.05;
+							sunshinePool[k].t = 0;
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
 
 }
 
@@ -384,36 +456,80 @@ void updateSunshine()
 		if (sunshinePool[i].used)
 		{
 			sunshinePool[i].frameIndex = (sunshinePool[i].frameIndex + 1) % 29;
-			if (sunshinePool[i].timer == 0)
+			if (sunshinePool[i].status == SUNSHINE_DOWN)
 			{
-				sunshinePool[i].y += 4;
+				struct Sunshine* sun = &sunshinePool[i];
+				sun->t += sun->speed;
+				sun->curPos = sun->p1 + sun->t * (sun->p4 - sun->p1);
+				if (sun->t >= 1)
+				{
+					sun->status = SUNSHINE_GROUND;
+					sun->timer = 0;
+				}
 			}
-			if (sunshinePool[i].y >= sunshinePool[i].destY)
+			else if (sunshinePool[i].status == SUNSHINE_GROUND)
 			{
 				sunshinePool[i].timer++;
 				if (sunshinePool[i].timer > 100)
 				{
 					sunshinePool[i].used = false;
+					sunshinePool[i].timer = 0;
 				}
 			}
-		}
-		else if (sunshinePool[i].xOffset)
-		{
-			float destY = 0;
-			float destX = 262;
-			float angle = atan((sunshinePool[i].y - destY) / (sunshinePool[i].x - destX));
-			sunshinePool[i].xOffset = 4 * cos(angle);
-			sunshinePool[i].yOffset = 4 * sin(angle);
-
-			sunshinePool[i].x -= sunshinePool[i].xOffset;
-			sunshinePool[i].y -= sunshinePool[i].yOffset;
-			if (sunshinePool[i].y < 0 || sunshinePool[i].x < 262)
+			else if (sunshinePool[i].status == SUNSHINE_COLLECT)
 			{
-				sunshinePool[i].xOffset = 0;
-				sunshinePool[i].yOffset = 0;
-				sunshine += 25;
+				struct Sunshine* sun = &sunshinePool[i];
+				sun->t += sun->speed;
+				sun->curPos = sun->p1 + sun->t * (sun->p4 - sun->p1);
+				if (sun->t > 1)
+				{
+					sun->used = false;
+					sunshine += 25;
+				}
 			}
+			else if (sunshinePool[i].status == SUNSHINE_PRODUCT)
+			{
+				struct Sunshine* sun = &sunshinePool[i];
+				sun->t += sun->speed;
+				sun->curPos = calcBezierPoint(sun->t, sun->p1, sun->p2, sun->p3, sun->p4);
+				if (sun->t > 1)
+				{
+					sun->status = SUNSHINE_GROUND;
+					sun->timer = 0;
+				}
+			}
+
+			//sunshinePool[i].frameIndex = (sunshinePool[i].frameIndex + 1) % 29;
+			//if (sunshinePool[i].timer == 0)
+			//{
+			//	sunshinePool[i].y += 4;
+			//}
+			//if (sunshinePool[i].y >= sunshinePool[i].destY)
+			//{
+			//	sunshinePool[i].timer++;
+			//	if (sunshinePool[i].timer > 100)
+			//	{
+			//		sunshinePool[i].used = false;
+			//	}
+			//}
 		}
+		//else if (sunshinePool[i].xOffset)
+		//{
+		//	float destY = 0;
+		//	float destX = 262;
+		//	float angle = atan((sunshinePool[i].y - destY) / (sunshinePool[i].x - destX));
+		//	sunshinePool[i].xOffset = 4 * cos(angle);
+		//	sunshinePool[i].yOffset = 4 * sin(angle);
+
+		//	sunshinePool[i].x -= sunshinePool[i].xOffset;
+		//	sunshinePool[i].y -= sunshinePool[i].yOffset;
+		//	if (sunshinePool[i].y < 0 || sunshinePool[i].x < 262)
+		//	{
+		//		sunshinePool[i].xOffset = 0;
+		//		sunshinePool[i].yOffset = 0;
+		//		sunshine += 25;
+		//	}
+		//}
 	}
 }
 
