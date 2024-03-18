@@ -1,37 +1,28 @@
 ﻿  main.cpp
-E:\CppProject\PVZ\main.cpp(96,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-E:\CppProject\PVZ\main.cpp(146,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-E:\CppProject\PVZ\main.cpp(176,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-E:\CppProject\PVZ\main.cpp(178,62): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-E:\CppProject\PVZ\main.cpp(178,30): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-E:\CppProject\PVZ\main.cpp(156,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-E:\CppProject\PVZ\main.cpp(205,64): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
-E:\CppProject\PVZ\main.cpp(205,38): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
-E:\CppProject\PVZ\main.cpp(300,10): warning C4244: 'initializing': conversion from '__int64' to 'int', possible loss of data
-E:\CppProject\PVZ\main.cpp(301,10): warning C4244: 'initializing': conversion from '__int64' to 'int', possible loss of data
-E:\CppProject\PVZ\main.cpp(320,20): warning C4244: 'initializing': conversion from '__int64' to 'float', possible loss of data
-E:\CppProject\PVZ\main.cpp(322,33): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-E:\CppProject\PVZ\main.cpp(406,52): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
-E:\CppProject\PVZ\main.cpp(408,20): warning C4244: 'initializing': conversion from '__int64' to 'float', possible loss of data
-E:\CppProject\PVZ\main.cpp(409,33): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-E:\CppProject\PVZ\main.cpp(435,90): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
-E:\CppProject\PVZ\main.cpp(435,58): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-E:\CppProject\PVZ\main.cpp(436,90): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
-E:\CppProject\PVZ\main.cpp(436,58): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-E:\CppProject\PVZ\main.cpp(438,36): warning C4305: '=': truncation from 'double' to 'float'
-  vector2.cpp
-E:\CppProject\PVZ\vector2.cpp(7,32): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
-E:\CppProject\PVZ\vector2.cpp(7,21): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
-E:\CppProject\PVZ\vector2.cpp(12,32): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
-E:\CppProject\PVZ\vector2.cpp(12,21): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
-E:\CppProject\PVZ\vector2.cpp(17,50): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
-E:\CppProject\PVZ\vector2.cpp(17,27): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
-E:\CppProject\PVZ\vector2.cpp(22,25): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-E:\CppProject\PVZ\vector2.cpp(22,18): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-E:\CppProject\PVZ\vector2.cpp(26,28): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-E:\CppProject\PVZ\vector2.cpp(26,19): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-E:\CppProject\PVZ\vector2.cpp(46,39): warning C4244: 'return': conversion from 'double' to '__int64', possible loss of data
-E:\CppProject\PVZ\vector2.cpp(51,37): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
-E:\CppProject\PVZ\vector2.cpp(51,19): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
-  Generating Code...
+E:\CppProject\PVZ\main.cpp(104,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+E:\CppProject\PVZ\main.cpp(158,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+E:\CppProject\PVZ\main.cpp(188,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+E:\CppProject\PVZ\main.cpp(190,62): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(190,30): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(168,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+E:\CppProject\PVZ\main.cpp(222,64): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(222,38): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(335,10): warning C4244: 'initializing': conversion from '__int64' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(336,10): warning C4244: 'initializing': conversion from '__int64' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(355,20): warning C4244: 'initializing': conversion from '__int64' to 'float', possible loss of data
+E:\CppProject\PVZ\main.cpp(357,33): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+E:\CppProject\PVZ\main.cpp(442,52): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(444,20): warning C4244: 'initializing': conversion from '__int64' to 'float', possible loss of data
+E:\CppProject\PVZ\main.cpp(445,33): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+E:\CppProject\PVZ\main.cpp(471,90): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(471,58): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(472,90): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(472,58): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(474,36): warning C4305: '=': truncation from 'double' to 'float'
+E:\CppProject\PVZ\main.cpp(899,49): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(899,35): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(919,38): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(919,25): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(934,49): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+E:\CppProject\PVZ\main.cpp(934,35): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
   PVZ.vcxproj -> E:\CppProject\PVZ\x64\Debug\PVZ.exe

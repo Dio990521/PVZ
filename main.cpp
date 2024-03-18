@@ -12,6 +12,7 @@
 
 #define WINDOW_WIDTH 900
 #define WINDOW_HEIGHT 600
+#define ZOMBIE_MAX 10
 
 enum {
 	PEASHOOTER,
@@ -23,6 +24,7 @@ IMAGE bgImage;
 IMAGE plantBar;
 IMAGE plantCards[PLANT_COUNT];
 IMAGE* plantSprites[PLANT_COUNT][20];
+IMAGE zombieStand[11];
 
 int curX, curY; // cursor pos after clicking the plant card
 int selectedPlant; // 0: no selection
@@ -35,11 +37,17 @@ struct Plant {
 	int hp;
 	int timer;
 	int x, y;
+	int shootTime;
 };
 
 struct Plant map[3][9];
 
 enum {SUNSHINE_DOWN, SUNSHINE_GROUND, SUNSHINE_COLLECT, SUNSHINE_PRODUCT};
+
+enum {RUNNING, WIN, FAIL};
+int killCount;
+int createdZombieCount;
+int gameStatus;
 
 struct Sunshine
 {
@@ -109,6 +117,10 @@ void gameInit()
 
 	memset(plantSprites, 0, sizeof(plantSprites));
 	memset(map, 0, sizeof(map));
+
+	killCount = 0;
+	createdZombieCount = 0;
+	gameStatus = RUNNING;
 
 	// load plant cards ui
 	char cardsDir[64];
@@ -190,6 +202,11 @@ void gameInit()
 		loadimage(&zombieEatSprites[i], cardsDir);
 	}
 
+	//for (int i = 0; i < 11; ++i)
+	//{
+	//	sprintf_s(cardsDir, sizeof(cardsDir), "res/zm_eat/0/%d.png", i + 1);
+	//}
+
 }
 
 void drawSunshine()
@@ -205,22 +222,24 @@ void drawSunshine()
 			putimagePNG(sunshinePool[i].curPos.x, sunshinePool[i].curPos.y, sunshineImg);
 		}
 	}
+
+	char scoreText[8];
+	sprintf_s(scoreText, sizeof(scoreText), "%d", sunshine);
+	outtextxy(276, 67, scoreText);
 }
 
-void updateWindow()
+void drawCards()
 {
-	BeginBatchDraw(); // buffer
-
-	putimage(0, 0, &bgImage);
-	putimagePNG(250, 0, &plantBar);
-
 	for (int i = 0; i < PLANT_COUNT; ++i)
 	{
 		int x = 338 + i * 65;
 		int y = 6;
 		putimage(x, y, &plantCards[i]);
 	}
+}
 
+void drawPlants()
+{
 	for (int i = 0; i < 3; ++i)
 	{
 		for (int j = 0; j < 9; ++j)
@@ -243,30 +262,10 @@ void updateWindow()
 		IMAGE* img = plantSprites[selectedPlant - 1][0];
 		putimagePNG(curX - img->getwidth() / 2, curY - img->getheight() / 2, img);
 	}
+}
 
-	drawSunshine();
-
-	char scoreText[8];
-	sprintf_s(scoreText, sizeof(scoreText), "%d", sunshine);
-	outtextxy(276, 67, scoreText);
-
-	// render zombies
-	int zombieCount = sizeof(zombiePool) / sizeof(zombiePool[0]);
-	for (int i = 0; i < zombieCount; ++i)
-	{
-		if (zombiePool[i].used)
-		{
-			//IMAGE* zombieImg = &zombieSprites[zombiePool[i].frameIndex];
-			IMAGE* zombieImg = NULL;
-			if (zombiePool[i].isDead) zombieImg = zombieDieSprites;
-			else if (zombiePool[i].isEating) zombieImg = zombieEatSprites;
-			else zombieImg = zombieSprites;
-			//IMAGE* zombieImg = (zombiePool[i].isDead) ? zombieDieSprites : zombieSprites;
-			zombieImg += zombiePool[i].frameIndex;
-			putimagePNG(zombiePool[i].x, zombiePool[i].y - zombieImg->getheight(), zombieImg);
-		}
-	}
-
+void drawBullets()
+{
 	// render bullets
 	int bulletCount = sizeof(bulletsPool) / sizeof(bulletsPool[0]);
 	for (int i = 0; i < bulletCount; ++i)
@@ -283,6 +282,42 @@ void updateWindow()
 		}
 
 	}
+}
+
+void drawZombies()
+{
+	// render zombies
+	int zombieCount = sizeof(zombiePool) / sizeof(zombiePool[0]);
+	for (int i = 0; i < zombieCount; ++i)
+	{
+		if (zombiePool[i].used)
+		{
+			//IMAGE* zombieImg = &zombieSprites[zombiePool[i].frameIndex];
+			IMAGE* zombieImg = NULL;
+			if (zombiePool[i].isDead) zombieImg = zombieDieSprites;
+			else if (zombiePool[i].isEating) zombieImg = zombieEatSprites;
+			else zombieImg = zombieSprites;
+			//IMAGE* zombieImg = (zombiePool[i].isDead) ? zombieDieSprites : zombieSprites;
+			zombieImg += zombiePool[i].frameIndex;
+			putimagePNG(zombiePool[i].x, zombiePool[i].y - zombieImg->getheight(), zombieImg);
+		}
+	}
+}
+
+void updateWindow()
+{
+	BeginBatchDraw(); // buffer
+
+	putimage(-112, 0, &bgImage);
+	putimagePNG(250, 0, &plantBar);
+
+	drawCards();
+	drawPlants();
+
+	drawSunshine();
+
+	drawZombies();
+	drawBullets();
 
 	EndBatchDraw(); // end buffer
 
@@ -352,19 +387,20 @@ void userClick()
 			curX = msg.x;
 			curY = msg.y;
 		}
-		else if (msg.message == WM_LBUTTONUP)
+		else if (msg.message == WM_LBUTTONUP && state == 1)
 		{
-			if (msg.x > 256 && msg.y > 179 && msg.y < 489)
+			if (msg.x > 256 - 112 && msg.y > 179 && msg.y < 489)
 			{
 				int row = (msg.y - 179) / 102;
-				int col = (msg.x - 256) / 81;
+				int col = (msg.x - (256 - 112)) / 81;
 				std::cout << row << col << std::endl;
 
 				if (map[row][col].type == 0)
 				{
 					map[row][col].type = selectedPlant;
 					map[row][col].frameIndex = 0;
-					map[row][col].x = 256 + col * 81;
+					map[row][col].shootTime = 0;
+					map[row][col].x = 256 - 112 + col * 81;
 					map[row][col].y = 179 + row * 102 + 14;
 				}
 					
@@ -402,7 +438,7 @@ void createSunshine()
 
 				sunshinePool[i].status = SUNSHINE_DOWN;
 				sunshinePool[i].t = 0;
-				sunshinePool[i].p1 = vector2(260 + rand() % (900 - 260), 60);
+				sunshinePool[i].p1 = vector2(260 - 112 + rand() % (900 - (260 - 112)), 60);
 				sunshinePool[i].p4 = vector2(sunshinePool[i].p1.x, 200 + (rand() % 4) * 90);
 				int offset = 2;
 				float distance = sunshinePool[i].p4.y - sunshinePool[i].p1.y;
@@ -535,6 +571,8 @@ void updateSunshine()
 
 void createZombie()
 {
+	if (createdZombieCount >= ZOMBIE_MAX) return;
+
 	static int zombieFreq = 200;
 	static int count = 0;
 	++count;
@@ -551,11 +589,12 @@ void createZombie()
 				memset(&zombiePool[i], 0, sizeof(zombiePool[i]));
 				zombiePool[i].used = true;
 				zombiePool[i].speed = 1;
-				zombiePool[i].hp = 100;
+				zombiePool[i].hp = 10;
 				zombiePool[i].isDead = false;
 				zombiePool[i].row = rand() % 3;
 				zombiePool[i].x = WINDOW_WIDTH;
 				zombiePool[i].y = 172 + (1 + zombiePool[i].row) * 100;
+				createdZombieCount++;
 				break;
 			}
 		}
@@ -577,6 +616,11 @@ void updateZombie()
 				if (zombiePool[i].frameIndex >= 10)
 				{
 					zombiePool[i].used = false;
+					killCount++;
+					if (killCount == ZOMBIE_MAX)
+					{
+						gameStatus = WIN;
+					}
 				}
 			}
 			else if (zombiePool[i].isEating)
@@ -588,10 +632,11 @@ void updateZombie()
 				zombiePool[i].frameIndex = (zombiePool[i].frameIndex + 1) % 22;
 			}
 			
-			if (zombiePool[i].x < 170)
+			if (zombiePool[i].x < 170 - 112)
 			{
-				MessageBox(NULL, "over", "fuck you loser", 0);
-				exit(0);
+				//MessageBox(NULL, "over", "fuck you loser", 0);
+				//exit(0);
+				gameStatus = FAIL;
 			}
 		}
 	}
@@ -618,11 +663,13 @@ void shoot()
 		{
 			if (map[i][j].type == PEASHOOTER + 1 && lines[i])
 			{
-				static int count = 0;
-				++count;
-				if (count > 20)
+				//static int count = 0;
+				//++count;
+				map[i][j].shootTime++;
+
+				if (map[i][j].shootTime > 20)
 				{
-					count = 0;
+					map[i][j].shootTime = 0;
 					int k = 0;
 					for (k = 0; k < bulletCount; ++k)
 					{
@@ -633,7 +680,7 @@ void shoot()
 							bulletsPool[k].speed = 5;
 							bulletsPool[k].blast = false;
 							bulletsPool[k].frameIndex = 0;
-							int plantX = 256 + j * 81;
+							int plantX = 256 - 112 + j * 81;
 							int plantY = 179 + i * 102 + 14;
 							bulletsPool[k].x = plantX + plantSprites[map[i][j].type - 1][0]->getwidth() - 10;
 							bulletsPool[k].y = plantY + 5;
@@ -683,7 +730,7 @@ void checkZombieCollision()
 		{
 			if (map[row][k].type == 0) continue;
 
-			int plantX = 256 + k * 81;
+			int plantX = 256 - 112 + k * 81;
 			int x1 = plantX + 10;
 			int x2 = plantX + 60;
 			int x3 = zombiePool[i].x + 80;
@@ -752,7 +799,7 @@ void collisionCheck()
 	checkZombieCollision();
 }
 
-void renderAll()
+void updatePlant()
 {
 	for (int i = 0; i < 3; ++i)
 	{
@@ -770,6 +817,12 @@ void renderAll()
 			}
 		}
 	}
+}
+
+void renderAll()
+{
+
+	updatePlant();
 
 	createSunshine();
 	updateSunshine();
@@ -809,7 +862,8 @@ void startMenu()
 			}
 			else if (msg.message == WM_LBUTTONUP && flag)
 			{
-				return;
+				EndBatchDraw();
+				break;
 			}
 		}
 
@@ -818,11 +872,124 @@ void startMenu()
 	
 }
 
+void viewScene()
+{
+	int xMin = WINDOW_WIDTH - bgImage.getwidth(); // 900-1400=-500
+	vector2 points[9] = {
+		{550, 80}, {530, 160}, {630, 170}, {530, 200}, {515, 270}, {565, 370}, {605, 340}, {705, 280}, {690, 340}
+	};
+	int index[9];
+	for (int i = 0; i < 9; ++i)
+	{
+		index[i] = rand() % 11;
+	}
+
+	int count = 0;
+	for (int x = 0; x >= xMin; x -= 2)
+	{
+		BeginBatchDraw();
+
+		putimage(x, 0, &bgImage);
+
+		// zombies preview
+		// TODO
+		++count;
+		for (int k = 0; k < 9; ++k)
+		{
+			putimagePNG(points[k].x - xMin + x, points[k].y, &zombieStand[index[k]]);
+			if (count >= 10)
+			{
+				index[k] = (index[k] + 1) % 11;
+			}
+		}
+
+		if (count >= 10) count = 0;
+
+		EndBatchDraw();
+		Sleep(5);
+	}
+
+	for (int i = 0; i < 100; ++i)
+	{
+		BeginBatchDraw();
+
+		putimage(xMin, 0, &bgImage);
+		for (int k = 0; k < 9; ++k)
+		{
+			putimagePNG(points[k].x, points[k].y, &zombieStand[index[k]]);
+			index[k] = (index[k] + 1) % 11;
+		}
+		EndBatchDraw();
+		Sleep(40);
+	}
+
+	//Íù»ØÒÆ
+	for (int x = xMin; x <= -112; x += 2) {	//Ã¿Ö¡ÒÆ¶¯2ÏñËØ
+		BeginBatchDraw();
+
+		putimage(x, 0, &bgImage);
+
+		count++;
+		for (int k = 0; k < 9; k++) {
+			putimagePNG(points[k].x - xMin + x, points[k].y, &zombieStand[index[k]]);
+			if (count >= 10) {
+				index[k] = (index[k] + 1) % 11;
+			}
+			if (count >= 10) count = 0;
+		}
+
+		EndBatchDraw();
+		Sleep(5);
+	}
+}
+
+void barDown()
+{
+	int height = plantBar.getheight();
+	for (int y = -height; y <= 0; y++) {
+		BeginBatchDraw();
+
+		putimage(-112, 0, &bgImage);
+
+		putimagePNG(250, y, &plantBar);
+
+		for (int i = 0; i < PLANT_COUNT; i++) {
+			int x = 338 + i * 65;
+			putimagePNG(x, 6 + y, &plantCards[i]);
+		}
+
+		EndBatchDraw();
+		Sleep(5);
+	}
+}
+
+bool checkGameOver()
+{
+	bool res = false;
+	if (gameStatus == WIN)
+	{
+		Sleep(1000);
+		loadimage(0, "res/win.png");
+		res = true;
+	}
+	else if (gameStatus == FAIL)
+	{
+		Sleep(1000);
+		loadimage(0, "res/fail.png");
+		res = true;
+	}
+	return res;
+}
+
 int main()
 {
 	gameInit();
 
 	startMenu();
+
+	//viewScene();
+
+	barDown();
 
 	int timer = 0;
 	bool flag = true;
@@ -841,6 +1008,10 @@ int main()
 			flag = false;
 			updateWindow();
 			renderAll();
+			if (checkGameOver())
+			{
+				break;
+			}
 		}
 
 	}
