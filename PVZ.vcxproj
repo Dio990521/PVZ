@@ -141,21 +141,41 @@ sfml-system.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Asset.cpp" />
+    <ClCompile Include="AudioAsset.cpp" />
+    <ClCompile Include="Collider.cpp" />
+    <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="GameEngine.cpp" />
     <ClCompile Include="GameState.cpp" />
+    <ClCompile Include="ImageAsset.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Plant.cpp" />
+    <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="State.cpp" />
+    <ClCompile Include="Sunshine.cpp" />
+    <ClCompile Include="TitleState.cpp" />
     <ClCompile Include="tools.cpp" />
     <ClCompile Include="vector2.cpp" />
+    <ClCompile Include="Zombie.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Asset.h" />
+    <ClInclude Include="AudioAsset.h" />
+    <ClInclude Include="Collider.h" />
+    <ClInclude Include="Bullet.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="GameEngine.h" />
     <ClInclude Include="GameState.h" />
+    <ClInclude Include="ImageAsset.h" />
+    <ClInclude Include="Plant.h" />
+    <ClInclude Include="AssetManager.h" />
     <ClInclude Include="State.h" />
+    <ClInclude Include="Sunshine.h" />
+    <ClInclude Include="TitleState.h" />
     <ClInclude Include="tools.h" />
     <ClInclude Include="vector2.h" />
+    <ClInclude Include="Zombie.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

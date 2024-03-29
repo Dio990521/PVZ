@@ -8,6 +8,9 @@
 #include<sstream>
 #include<stack>
 #include<map>
+#include<string>
+#include<unordered_map>
+using std::string;
 
 #include "SFML\Graphics.hpp"
 #include "SFML\Audio.hpp"
@@ -18,10 +21,13 @@
 class Entity
 {
 private:
-
+	int x, y;
+	int width, height;
+	int frameIndex;
 protected:
 	sf::RectangleShape shape;
 	float movementSpeed;
+	sf::Sprite sprite;
 
 public:
 	Entity();
