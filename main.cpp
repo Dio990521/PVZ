@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AssetManager.h"
+#include "GameEngine.h"
 #include <stdio.h>
 #include <iostream>
 #include <time.h>
@@ -29,6 +31,7 @@ IMAGE zombieStand[11];
 int curX, curY; // cursor pos after clicking the plant card
 int selectedPlant; // 0: no selection
 int sunshine;
+
 
 struct Plant {
 	int type = 0; // 0: no plant
@@ -84,6 +87,8 @@ struct Zombie zombiePool[10];
 IMAGE zombieSprites[22];
 IMAGE zombieDieSprites[10];
 IMAGE zombieEatSprites[21];
+
+AssetManager assetManager;
 
 struct Bullet
 {
@@ -342,8 +347,11 @@ void collectSunshine(ExMessage* msg)
 				sunshinePool[i].status = SUNSHINE_COLLECT;
 
 				//mciSendString("play res/audio/sunshine.mp3", 0, 0, 0);
-				PlaySound("res/audio/sunshine.wav", NULL, SND_FILENAME | SND_ASYNC);
-
+				//PlaySound("res/audio/sunshine.wav", NULL, SND_FILENAME | SND_ASYNC);
+				
+				sf::SoundBuffer* buffer = assetManager.Get<AudioAsset>("sunshine")->GetBuffer();
+				sf::Sound* sound = new sf::Sound(*buffer);
+				sound->play();
 				//float destY = 0;
 				//float destX = 262;
 				//float angle = atan((y - destY) / (x - destX));
@@ -983,6 +991,10 @@ bool checkGameOver()
 
 int main()
 {
+
+	
+	AudioAsset* audioAsset = assetManager.Load<AudioAsset>("sunshine", "res/audio/sunshine.wav");
+
 	gameInit();
 
 	startMenu();
@@ -1015,8 +1027,11 @@ int main()
 		}
 
 	}
+
 	//GameEngine gameEngine;
 	//gameEngine.run();
+
+
 	system("pause");
 	return 0;
 }

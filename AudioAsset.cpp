@@ -2,14 +2,21 @@
 
 bool AudioAsset::Load(const string& filename)
 {
-	if (!this->audio.loadFromFile(filename))
+	this->buffer = new sf::SoundBuffer();
+	if (!this->buffer->loadFromFile(filename))
 	{
 		std::cerr << "Failed to load audio file." << std::endl;
 		return false;
 	}
+	
 	return true;
 }
 
 void AudioAsset::Release()
 {
+}
+
+sf::SoundBuffer* AudioAsset::GetBuffer()
+{
+	return this->buffer;
 }

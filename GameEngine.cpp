@@ -4,8 +4,8 @@ void GameEngine::initWindow()
 {
     std::ifstream ifs("Configs/window.ini");
 
-    std::string title = "None";
-    sf::VideoMode windowBounds(800, 600);
+    std::string title = "Plants vs Zombies C++ by Chengzhang Dong";
+    sf::VideoMode windowBounds(900, 600);
     unsigned frameRateLimit = 120;
     bool verticalSyncEnabled = false;
     if (ifs.is_open())
@@ -90,7 +90,7 @@ void GameEngine::update()
 
 void GameEngine::render()
 {
-    this->window->clear();
+    
 
     if (!this->states.empty()) 
         this->states.top()->render(this->window);
@@ -100,10 +100,27 @@ void GameEngine::render()
 
 void GameEngine::run()
 {
+    sf::Texture texture;
+    if (!texture.loadFromFile("res/map.jpg"))
+    {
+        std::cout << "No image" << std::endl;
+    }
+
+    sf::Sprite sprite(texture);
+    
+    sf::SoundBuffer buffer;
+    buffer.loadFromFile("res/audio/sunshine.wav");
+    sf::Sound sound(buffer);
+    sound.play();
+    
     while (this->window->isOpen())
     {
         this->updateDeltaTime();
+        
         this->update();
+        this->window->clear();
+        this->window->draw(sprite);
         this->render();
+        
     }
 }
