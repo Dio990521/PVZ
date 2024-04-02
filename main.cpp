@@ -1,6 +1,8 @@
 #pragma once
 
 #include "AssetManager.h"
+#include "AudioManager.h"
+#include "Singleton.h"
 #include "GameEngine.h"
 #include <stdio.h>
 #include <iostream>
@@ -87,8 +89,6 @@ struct Zombie zombiePool[10];
 IMAGE zombieSprites[22];
 IMAGE zombieDieSprites[10];
 IMAGE zombieEatSprites[21];
-
-AssetManager assetManager;
 
 struct Bullet
 {
@@ -348,10 +348,7 @@ void collectSunshine(ExMessage* msg)
 
 				//mciSendString("play res/audio/sunshine.mp3", 0, 0, 0);
 				//PlaySound("res/audio/sunshine.wav", NULL, SND_FILENAME | SND_ASYNC);
-				
-				sf::SoundBuffer* buffer = assetManager.Get<AudioAsset>("sunshine")->GetBuffer();
-				sf::Sound* sound = new sf::Sound(*buffer);
-				sound->play();
+				Singleton<AudioManager>::get()->PlaySFX("sunshine");
 				//float destY = 0;
 				//float destX = 262;
 				//float angle = atan((y - destY) / (x - destX));
@@ -989,11 +986,16 @@ bool checkGameOver()
 	return res;
 }
 
+
+
 int main()
 {
 
+	AudioAsset* audioAsset = Singleton<AssetManager>::get()->Load<AudioAsset>("sunshine", "res/audio/sunshine.wav");
+	ImageAsset* imageAsset = Singleton<AssetManager>::get()->Load<ImageAsset>("map", "res/map.jpg");
+	Singleton<AudioManager>::get()->PlayBGM("res/audio/BG.MP3", 50);
+	//sf::Sprite* mapSprite = Singleton<AssetManager>::get()->Get<ImageAsset>("map")->GetSprite();
 	
-	AudioAsset* audioAsset = assetManager.Load<AudioAsset>("sunshine", "res/audio/sunshine.wav");
 
 	gameInit();
 
@@ -1029,6 +1031,7 @@ int main()
 	}
 
 	//GameEngine gameEngine;
+	//GameEngine::GetEntities();
 	//gameEngine.run();
 
 

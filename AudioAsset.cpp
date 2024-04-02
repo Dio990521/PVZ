@@ -14,6 +14,7 @@ bool AudioAsset::Load(const string& filename)
 
 void AudioAsset::Release()
 {
+	delete this->buffer;
 }
 
 sf::SoundBuffer* AudioAsset::GetBuffer()

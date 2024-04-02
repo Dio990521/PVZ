@@ -45,9 +45,27 @@ GameEngine::~GameEngine()
         
 }
 
+//std::unordered_map<string, Entity>& GameEngine::GetEntities()
+//{
+//    // TODO: insert return statement here
+//    return nullptr;
+//}
+
 void GameEngine::endApplication()
 {
     std::cout << "End! fuck!" << std::endl;
+}
+
+void GameEngine::AwakeEntities()
+{
+}
+
+void GameEngine::UpdateEntities()
+{
+}
+
+void GameEngine::DestroyEntites()
+{
 }
 
 /*Update the deltaTime with the time it takes to update and render one frame*/
@@ -100,26 +118,16 @@ void GameEngine::render()
 
 void GameEngine::run()
 {
-    sf::Texture texture;
-    if (!texture.loadFromFile("res/map.jpg"))
-    {
-        std::cout << "No image" << std::endl;
-    }
-
-    sf::Sprite sprite(texture);
-    
-    sf::SoundBuffer buffer;
-    buffer.loadFromFile("res/audio/sunshine.wav");
-    sf::Sound sound(buffer);
-    sound.play();
+        
+    AwakeEntities();
     
     while (this->window->isOpen())
     {
         this->updateDeltaTime();
-        
+        this->UpdateEntities();
         this->update();
         this->window->clear();
-        this->window->draw(sprite);
+        //this->window->draw(sprite);
         this->render();
         
     }

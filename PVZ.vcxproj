@@ -143,6 +143,7 @@ sfml-system.lib;%(AdditionalDependencies)</AdditionalDependencies>
   <ItemGroup>
     <ClCompile Include="Asset.cpp" />
     <ClCompile Include="AudioAsset.cpp" />
+    <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="Entity.cpp" />
@@ -162,6 +163,7 @@ sfml-system.lib;%(AdditionalDependencies)</AdditionalDependencies>
   <ItemGroup>
     <ClInclude Include="Asset.h" />
     <ClInclude Include="AudioAsset.h" />
+    <ClInclude Include="AudioManager.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="Bullet.h" />
     <ClInclude Include="Entity.h" />
@@ -170,6 +172,7 @@ sfml-system.lib;%(AdditionalDependencies)</AdditionalDependencies>
     <ClInclude Include="ImageAsset.h" />
     <ClInclude Include="Plant.h" />
     <ClInclude Include="AssetManager.h" />
+    <ClInclude Include="Singleton.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="Sunshine.h" />
     <ClInclude Include="TitleState.h" />

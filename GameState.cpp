@@ -12,12 +12,12 @@ GameState::~GameState()
 void GameState::update(const float& deltaTime)
 {
 	this->updateKeybinds(deltaTime);
-	this->player.update(deltaTime);
+	this->player.Update(deltaTime);
 }
 
 void GameState::render(sf::RenderTarget* target)
 {
-	this->player.render(this->window);
+	this->player.Render(this->window);
 }
 
 void GameState::checkForEnd()

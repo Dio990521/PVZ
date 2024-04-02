@@ -12,11 +12,7 @@ public:
 	
 	template<typename T> T* Load(const string& id, const string& path)
 	{
-		if (assets.find(id) != assets.end())
-		{
-			std::cerr << "Asset with ID " << id << " already exists." << std::endl;
-			return nullptr;
-		}
+		if (assets.find(id) != assets.end()) return nullptr;
 
 		T* asset = new T();
 		if (asset->Load(path))
@@ -30,6 +26,7 @@ public:
 	}
 
 	void Release(const string& id);
+
 	template<typename T> T* Get(const string& id)
 	{
 		{

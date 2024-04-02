@@ -1,7 +1,4 @@
 #include "AssetManager.h"
-//template<typename T> 
-//T* AssetManager::Load(const string& id, const string& path)
-
 
 void AssetManager::Release(const string& id)
 {
@@ -18,5 +15,4 @@ void AssetManager::Release(const string& id)
 	}
 }
 
-//template<typename T> 
-//T* AssetManager::Get(const string& id)
+
